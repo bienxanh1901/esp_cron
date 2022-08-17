@@ -58,6 +58,7 @@ struct cron_job_struct
   int id;
   void * load;
   time_t next_execution;
+  bool repeat;
 };
 
 
@@ -73,7 +74,7 @@ typedef void (*cron_job_callback)(cron_job *);
 *  RETURNS: heap allocated cron_job
 */
 
-cron_job * cron_job_create(const char * schedule,cron_job_callback callback, void * data);
+cron_job * cron_job_create(const char * schedule, cron_job_callback callback, void * data, bool repeat);
 
 /*
 *  SUMARY: Deallocates, and remove from scheduling 

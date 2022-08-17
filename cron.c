@@ -35,7 +35,7 @@ static struct
     .seconds_until_next_execution = -1
   };
 
-cron_job *cron_job_create(const char *schedule, cron_job_callback callback, void *data)
+cron_job *cron_job_create(const char *schedule, cron_job_callback callback, void *data, bool repeat)
 {
   cron_job_list_init();// CALL THIS ON ANY CREATE
   cron_job *job = calloc(sizeof(cron_job), 1);
@@ -45,6 +45,7 @@ cron_job *cron_job_create(const char *schedule, cron_job_callback callback, void
   job->data = data;
   job->id = -1;
   job->load=NULL;
+  job->repeat = repeat;
   cron_job_load_expression(job, schedule);
   cron_job_schedule(job);
   goto end;
@@ -244,7 +245,9 @@ void cron_schedule_task(void *args)
       (NULL),               /* No need for the handle */
       tskNO_AFFINITY);      /* No specific core */          
       cron_job_list_remove(job->id); // There is mutex in there that can mess with our timing, but i am not sure if we should move this to the new task. 
-      cron_job_schedule(job); // There is mutex in there that can mess with our timing, but i am not sure if we should move this to the new task. 
+      if (job->repeat) {
+        cron_job_schedule(job); // There is mutex in there that can mess with our timing, but i am not sure if we should move this to the new task. 
+      }
     }
     else
     {
